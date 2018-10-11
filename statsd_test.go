@@ -19,13 +19,13 @@ const (
 var testDate = time.Date(2015, 10, 22, 16, 53, 0, 0, time.UTC)
 
 func TestCount(t *testing.T) {
-	testOutput(t, "test_key:5|c", func(c *Client) {
+	testOutput(t, "test_key:5|g", func(c *Client) {
 		c.Count(testKey, 5)
 	})
 }
 
 func TestIncrement(t *testing.T) {
-	testOutput(t, "test_key:1|c", func(c *Client) {
+	testOutput(t, "test_key:1|g", func(c *Client) {
 		c.Increment(testKey)
 	})
 }
@@ -38,7 +38,7 @@ func TestGauge(t *testing.T) {
 }
 
 func TestTiming(t *testing.T) {
-	testOutput(t, "test_key:6|ms", func(c *Client) {
+	testOutput(t, "test_key:6|g", func(c *Client) {
 		c.Timing(testKey, 6)
 	})
 }
@@ -99,7 +99,7 @@ func TestNewTiming(t *testing.T) {
 	}
 	defer func() { now = time.Now }()
 
-	testOutput(t, "test_key:10|ms\ntest_key:1000|ms", func(c *Client) {
+	testOutput(t, "test_key:10|g\ntest_key:1000|g", func(c *Client) {
 		timing := c.NewTiming()
 		timing.Send(testKey)
 
@@ -140,7 +140,7 @@ func TestMute(t *testing.T) {
 }
 
 func TestSamplingRateOK(t *testing.T) {
-	testOutput(t, "test_key:3|c|@0.6\ntest_key:4|ms|@0.6", func(c *Client) {
+	testOutput(t, "test_key:3|g|@0.6\ntest_key:4|g|@0.6", func(c *Client) {
 		randFloat = func() float32 { return 0.5 }
 		c.Count(testKey, 3)
 		c.Timing(testKey, 4)
@@ -156,31 +156,31 @@ func TestSamplingRateKO(t *testing.T) {
 }
 
 func TestPrefix(t *testing.T) {
-	testOutput(t, "foo.test_key:1|c", func(c *Client) {
+	testOutput(t, "foo.test_key:1|g", func(c *Client) {
 		c.Increment(testKey)
 	}, Prefix("foo"))
 }
 
 func TestNilTags(t *testing.T) {
-	testOutput(t, "test_key:1|c", func(c *Client) {
+	testOutput(t, "test_key:1|g", func(c *Client) {
 		c.Increment(testKey)
 	}, TagsFormat(InfluxDB), Tags())
 }
 
 func TestInfluxDBTags(t *testing.T) {
-	testOutput(t, "test_key,tag1=value1,tag2=value2:1|c", func(c *Client) {
+	testOutput(t, "test_key,tag1=value1,tag2=value2:1|g", func(c *Client) {
 		c.Increment(testKey)
 	}, TagsFormat(InfluxDB), Tags("tag1", "value1", "tag2", "value2"))
 }
 
 func TestDatadogTags(t *testing.T) {
-	testOutput(t, "test_key:1|c|#tag1:value1,tag2:value2", func(c *Client) {
+	testOutput(t, "test_key:1|g|#tag1:value1,tag2:value2", func(c *Client) {
 		c.Increment(testKey)
 	}, TagsFormat(Datadog), Tags("tag1", "value1", "tag2", "value2"))
 }
 
 func TestNoTagFormat(t *testing.T) {
-	testOutput(t, "test_key:1|c", func(c *Client) {
+	testOutput(t, "test_key:1|g", func(c *Client) {
 		c.Increment(testKey)
 	}, Tags("tag1", "value1", "tag2", "value2"))
 }
@@ -222,7 +222,7 @@ func TestFlush(t *testing.T) {
 		c.Increment(testKey)
 		c.Flush()
 		got := getOutput(c)
-		want := "test_key:1|c"
+		want := "test_key:1|g"
 		if got != want {
 			t.Errorf("Invalid output, got %q, want %q", got, want)
 		}
@@ -236,7 +236,7 @@ func TestFlushPeriod(t *testing.T) {
 		time.Sleep(time.Millisecond)
 		c.conn.mu.Lock()
 		got := getOutput(c)
-		want := "test_key:1|c"
+		want := "test_key:1|g"
 		if got != want {
 			t.Errorf("Invalid output, got %q, want %q", got, want)
 		}
@@ -256,7 +256,7 @@ func TestMaxPacketSize(t *testing.T) {
 
 		c.Increment(testKey)
 		got = conn.buf.String()
-		want := "test_key:1|c"
+		want := "test_key:1|g"
 		if got != want {
 			t.Errorf("Invalid output, got %q, want %q", got, want)
 		}
@@ -271,13 +271,13 @@ func TestMaxPacketSize(t *testing.T) {
 }
 
 func TestClone(t *testing.T) {
-	testOutput(t, "test_key:5|c", func(c *Client) {
+	testOutput(t, "test_key:5|g", func(c *Client) {
 		c.Clone().Count(testKey, 5)
 	})
 }
 
 func TestCloneInherits(t *testing.T) {
-	testOutput(t, "app.test_key:5|c|@0.5|#tag1:value1", func(c *Client) {
+	testOutput(t, "app.test_key:5|g|@0.5|#tag1:value1", func(c *Client) {
 		clone := c.Clone()
 		randFloat = func() float32 { return 0.3 }
 		clone.Count(testKey, 5)
@@ -304,7 +304,7 @@ func TestMuteClone(t *testing.T) {
 }
 
 func TestClonePrefix(t *testing.T) {
-	testOutput(t, "app.http.test_key:5|c", func(c *Client) {
+	testOutput(t, "app.http.test_key:5|g", func(c *Client) {
 		c.Clone(Prefix("http")).Count(testKey, 5)
 	}, Prefix("app"))
 }
@@ -317,14 +317,14 @@ func TestCloneRate(t *testing.T) {
 }
 
 func TestCloneInfluxDBTags(t *testing.T) {
-	testOutput(t, "test_key,tag1=value1,tag2=value2:5|c", func(c *Client) {
+	testOutput(t, "test_key,tag1=value1,tag2=value2:5|g", func(c *Client) {
 		clone := c.Clone(Tags("tag1", "value3", "tag2", "value2"))
 		clone.Count(testKey, 5)
 	}, TagsFormat(InfluxDB), Tags("tag1", "value1"))
 }
 
 func TestCloneDatadogTags(t *testing.T) {
-	testOutput(t, "test_key:5|c|#tag1:value1,tag2:value2", func(c *Client) {
+	testOutput(t, "test_key:5|g|#tag1:value1,tag2:value2", func(c *Client) {
 		clone := c.Clone(Tags("tag1", "value3", "tag2", "value2"))
 		clone.Count(testKey, 5)
 	}, TagsFormat(Datadog), Tags("tag1", "value1"))
@@ -346,7 +346,7 @@ func TestDialError(t *testing.T) {
 }
 
 func TestConcurrency(t *testing.T) {
-	testOutput(t, "test_key:1|c\ntest_key:1|c\ntest_key:1|c", func(c *Client) {
+	testOutput(t, "test_key:1|g\ntest_key:1|g\ntest_key:1|g", func(c *Client) {
 		var wg sync.WaitGroup
 		wg.Add(1)
 		c.Increment(testKey)
@@ -474,7 +474,7 @@ func testNetwork(t *testing.T, network string) {
 	received := make(chan bool)
 	server := newServer(t, network, testAddr, func(p []byte) {
 		s := string(p)
-		if s != "test_key:1|c" {
+		if s != "test_key:1|g" {
 			t.Errorf("invalid output: %q", s)
 		}
 		received <- true
